@@ -18,7 +18,11 @@ Check if `~/.claude/skills/auto-standup/config.json` exists.
    - Slack (messages, threads)
    - Gmail (emails sent/received)
 
-2. Ask: "What is Trinity's Slack user ID? (e.g. U012AB3CD — find it by right-clicking Trinity in Slack → View profile → Copy member ID)"
+2. Look up Trinity's Slack user ID automatically using the Slack MCP:
+   - Call `slack_search_users` with query `"Trinity"`
+   - Pick the result that is the Trinity bot (look for a bot/app account named Trinity)
+   - If multiple results appear, ask the user to confirm which one is Trinity
+   - If the search fails or returns nothing, ask: "What is Trinity's Slack user ID?" as a fallback
 
 3. Save both to `~/.claude/skills/auto-standup/config.json`:
    ```json
