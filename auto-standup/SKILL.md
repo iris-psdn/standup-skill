@@ -1,10 +1,10 @@
 ---
 name: auto-standup
-description: Draft my daily Trinity standup in one pass by pulling activity from my configured sources — no questions asked, output ready to paste.
+description: Draft my daily Trinity standup, confirm it with me, then send it to Trinity in Slack automatically.
 user-invocable: true
 ---
 
-You are helping me write my daily standup report. Produce a complete draft in ONE pass — do **not** ask me questions mid-run, do **not** pause for confirmation. A draft that's 80% right and I can edit in 30 seconds is far more useful than a perfect one that needs 5 minutes of back-and-forth. The output must match the format Trinity expects in our Slack standup thread.
+You are helping me write my daily standup report. Pull my activity, draft the standup, then confirm it with me before sending to Trinity. Do **not** ask questions during data collection — just draft and present.
 
 ## Step 0 — First-time setup (skip if config exists)
 
@@ -18,15 +18,18 @@ Check if `~/.claude/skills/auto-standup/config.json` exists.
    - Slack (messages, threads)
    - Gmail (emails sent/received)
 
-2. Save their choices to `~/.claude/skills/auto-standup/config.json`:
+2. Ask: "What is Trinity's Slack user ID? (e.g. U012AB3CD — find it by right-clicking Trinity in Slack → View profile → Copy member ID)"
+
+3. Save both to `~/.claude/skills/auto-standup/config.json`:
    ```json
    {
-     "sources": ["github", "notion", "slack", "gmail"]
+     "sources": ["github", "notion", "slack", "gmail"],
+     "trinity_slack_user_id": "U012AB3CD"
    }
    ```
    Only include sources the user selected.
 
-3. Tell the user: "Config saved. To change your sources later, delete `~/.claude/skills/auto-standup/config.json` and run `/auto-standup` again." Then proceed immediately to Step 1.
+4. Tell the user: "Config saved. To change settings later, delete `~/.claude/skills/auto-standup/config.json` and run `/auto-standup` again." Then proceed immediately to Step 1.
 
 **If the config exists**, read it silently and proceed to Step 1. Only run source sections whose key appears in `sources`.
 
@@ -118,9 +121,9 @@ Infer from in-progress PRs not yet merged and open assigned issues. If guessing 
 
 Only include a blocker if explicitly evidenced in a PR description, issue body, Gmail thread, or Slack thread. Otherwise: `none`.
 
-## Step 7 — Output (one pass, no follow-up)
+## Step 7 — Present draft and confirm
 
-Produce exactly this block — no preamble, no trailing questions:
+Show the standup draft in this exact format:
 
 ```
 standup:
@@ -129,6 +132,22 @@ standup:
 • Today: <item> — [repo#N](url); <item>
 • Blocked: <blocker with link, or "none">
 ```
+
+Then ask exactly: **"Does this look good? Say 'yes' to send to Trinity, or tell me what to change."**
+
+- If the user requests changes, apply them and show the updated draft. Ask again.
+- Repeat until the user says "yes" (or any clear confirmation like "send it", "looks good", "go ahead").
+- Do not send until you have an explicit yes.
+
+## Step 8 — Send to Trinity
+
+Once confirmed:
+
+1. Read `trinity_slack_user_id` from `~/.claude/skills/auto-standup/config.json`.
+2. Open a DM with Trinity using `slack_send_message` to that user ID.
+3. Send the standup text exactly as confirmed — no extra commentary, no preamble. Trinity parses the raw text.
+4. Confirm to the user: "Sent to Trinity ✓"
+5. If the send fails, show the error and say: "You can paste it manually into your Trinity DM."
 
 ## Rules
 
